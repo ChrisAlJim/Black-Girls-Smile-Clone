@@ -4,6 +4,8 @@ import ResourceFilters from "@/components/ResourceFilters";
 import ResourceHighlightedTiles from "@/components/ResourceHighlightedTiles";
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useResources } from "@/app/hooks/useResources";
+import { useHighlightedResources } from "@/app/hooks/useHighlightedResources";
 
 export default function Resources() {
   return (
@@ -17,99 +19,24 @@ function PageContents() {
   const urlParams = useSearchParams();
   const router = useRouter();
 
-  const [resources, setResources] = useState([]);
   const [filters, setFilters] = useState(new Filters(urlParams));
-  const [offset, setOffset] = useState(null);
-  const [highlightedResources, setHighlighted] = useState([]);
-  const [highlightedOffset, setHighOffset] = useState(null);
-  const [error, setError] = useState(null);
+  const { resources, hasMore, fetchResources } = useResources(filters);
+  const { highlightedResources } = useHighlightedResources();
 
   useEffect(() => {
-    // ///////////////////////////
-    // Fetching resources on filter change
-    // ///////////////////////////
-    async function fetchData() {
-      try {
-        const [data, error] = await fetchResources({
-          pageSize: 8,
-          filters,
-        });
-
-        if (data) {
-          setResources(data.records);
-          setOffset(data.offset);
-        }
-      } catch (error) {
-        console.error(error);
-        setError(error.message);
-      }
-    }
-
     // ///////////////////////////
     // Updating Params on filter change
     // ///////////////////////////
-    function handleUpdateParams() {
-      const { Status, Category, Resources_Type, Subjects } = filters;
-      const params = new URLSearchParams();
+    const { Status, Category, Resources_Type, Subjects } = filters;
+    const params = new URLSearchParams();
 
-      if (Status && Status.length > 0) {
-        params.append("status", Status);
-      }
+    if (Status && Status.length > 0) params.append("status", Status);
+    if (Category && Category.length > 0) params.append("category", Category);
+    if (Resources_Type && Resources_Type.length > 0) params.append("resourcesType", Resources_Type);
+    Subjects.forEach(subject => params.append("subject", subject));
 
-      if (Category && Category.length > 0) {
-        params.append("category", Category);
-      }
-
-      if (Resources_Type && Resources_Type.length > 0) {
-        params.append("resourcesType", Resources_Type);
-      }
-
-      Subjects.forEach(subject => {
-        params.append("subject", subject);
-      });
-
-      router.replace(`?${params.toString()}`);
-    }
-
-    handleUpdateParams();
-    fetchData();
+    router.replace(`?${params.toString()}`);
   }, [filters]);
-
-  useEffect(() => {
-    async function fetchHighlightedData() {
-      try {
-        const [data, error] = await fetchHighlightedResources();
-
-        if (data) {
-          setHighlighted(data.records);
-          setHighOffset(data.offset);
-        }
-      } catch (error) {
-        console.error(error);
-        setError(error.message);
-      }
-    }
-
-    fetchHighlightedData();
-  }, []);
-
-  //button function to render more resourceess
-  const handleLoadMoreClick = async event => {
-    try {
-      const [data, error] = await fetchResources({
-        pageSize: 8,
-        offset,
-        filters,
-      });
-      if (data) {
-        setResources([...resources, ...data.records]);
-        setOffset(data.offset);
-      }
-    } catch (error) {
-      console.error(error);
-      setError(error.message);
-    }
-  };
 
   return (
     <div className="bg-[#FFF5EA] overscroll-y-none">
@@ -153,9 +80,9 @@ function PageContents() {
         {/* resource tiles */}
         <ResourceTileGrid resources={resources} />
         {/* pagination button (if there is an offset) */}
-        {offset && (
+        {hasMore && (
           <button
-            onClick={handleLoadMoreClick}
+            onClick={() => fetchResources(filters)}
             className='flex justify-self-center justify-center mt-[10px] mx-[3px] rounded-[47.5px] bg-[#C96C86] hover:bg-[#B55772] color-[#FFF5EA] text-2xl rounded-2xl max-w-[350px] px-[30px] py-[15px] hover:cursor-pointer'>
             Load More
           </button>
@@ -165,78 +92,6 @@ function PageContents() {
   );
 }
 
-async function fetchResources({ pageSize = 8, offset, filters }) {
-  const { Status, Name, Category, Resources_Type, Subjects } = filters;
-
-  const params = new URLSearchParams();
-  params.append("pageSize", pageSize.toString());
-  if (offset) params.append("offset", offset.toString());
-
-  // ///////
-  // Filters
-  // ///////
-
-  if (Status && Status.length > 0) {
-    params.append("status", Status);
-  }
-
-  if (Name && Name.length > 0) {
-    params.append("name", Name);
-  }
-
-  if (Category && Category.length > 0) {
-    params.append("category", Category);
-  }
-
-  if (Resources_Type && Resources_Type.length > 0) {
-    params.append("resourcesType", Resources_Type);
-  }
-
-  Subjects.forEach(subject => {
-    params.append("subject", subject);
-  });
-
-  try {
-    const response = await fetch(`/api/resources?${params.toString()}`);
-
-    if (!response.ok)
-      throw new Error(
-        `Fetch failed: ${response.status} - ${response.statusText}`
-      );
-
-    const data = await response.json();
-
-    return [data, null];
-  } catch (error) {
-    console.error("unable to fetch resources", error);
-    return [null, error];
-  }
-}
-
-async function fetchHighlightedResources(
-  { pageSize = 10, offset } = { pageSize: 10 }
-) {
-  const params = new URLSearchParams();
-  params.append("pageSize", pageSize.toString());
-  if (offset) params.append("offset", offset.toString());
-
-  try {
-    const response = await fetch(
-      `/api/resources/highlighted?${params.toString()}`
-    );
-
-    if (!response.ok)
-      throw new Error(
-        `Fetch failed: ${response.status} - ${response.statusText}`
-      );
-
-    const data = await response.json();
-    return [data, null];
-  } catch (error) {
-    console.error("unable to fetch highlighted resources", error);
-    return [null, error];
-  }
-}
 
 class Filters {
   Status = "Active";
