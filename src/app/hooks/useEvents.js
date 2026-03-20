@@ -31,7 +31,7 @@ export function useEvents(query = {}) {
 
 	const buildQueryParams = (query, offset) => {
 		const params = new URLSearchParams();
-		params.append('pageSize', 6);
+		params.append('pageSize', 8);
 		if (query?.search) params.append('search', query.search);
 		if (offset) params.append('offset', offset);
 		return params.toString();

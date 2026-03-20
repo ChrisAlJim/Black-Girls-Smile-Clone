@@ -2,6 +2,8 @@
 import ResourceTileGrid from "@/components/ResourceTileGrid";
 import ResourceFilters from "@/components/ResourceFilters";
 import ResourceHighlightedTiles from "@/components/ResourceHighlightedTiles";
+import LoadMoreButton from "@/components/LoadMoreButton";
+import PageHero from "@/components/PageHero";
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useResources } from "@/app/hooks/useResources";
@@ -20,7 +22,7 @@ function PageContents() {
   const router = useRouter();
 
   const [filters, setFilters] = useState(new Filters(urlParams));
-  const { resources, hasMore, fetchResources } = useResources(filters);
+  const { resources, hasMore, fetchResources, loading } = useResources(filters);
   const { highlightedResources } = useHighlightedResources();
 
   useEffect(() => {
@@ -53,20 +55,11 @@ function PageContents() {
           }
         />
       ):(
-        <div className="grid grid-flow-col justify-center relative w-screen sm:h-[207px] md:h-[307px] lg:h-[407px] overflow-hidden mb-[20px]">
-          {/* image  */}
-        <div id="image-div" className="relative w-screen h-[207px] sm:h-[307px] md:h-[407px] after:absolute after:inset-0 after:bg-[#C96C86] after:opacity-30">
-          <img
-            className='w-full h-full object-cover object-center z-0 bg-local'
-            src={"/resource-banner-2.webp"}
-            alt='Three young beautiful black girls leaning against a pink wall, posing together and smiling.'
-          />
-        </div>
-      
-      {/* header title */}
-      <h1 className="w-full flex items-center justify-center self-center justify-self-center text-center text-white text-4xl absolute z-1"> Resources </h1>
-      
-        </div>
+        <PageHero
+          bgImage="/thought-catalog-23KdVfc395A-unsplash-(1).webp"
+          title="Resources"
+          className="aspect-[16/9] sm:aspect-[21/9] md:aspect-[24/9] lg:aspect-[32/9]"
+        />
       ))}
 
       <div className='flex-col content-center'>
@@ -80,13 +73,12 @@ function PageContents() {
         {/* resource tiles */}
         <ResourceTileGrid resources={resources} />
         {/* pagination button (if there is an offset) */}
-        {hasMore && (
-          <button
-            onClick={() => fetchResources(filters)}
-            className='flex justify-self-center justify-center mt-[10px] mx-[3px] rounded-[47.5px] bg-[#C96C86] hover:bg-[#B55772] color-[#FFF5EA] text-2xl rounded-2xl max-w-[350px] px-[30px] py-[15px] hover:cursor-pointer'>
-            Load More
-          </button>
-        )}
+        <LoadMoreButton
+          hasMore={hasMore}
+          loading={loading}
+          onClick={() => fetchResources(filters)}
+          aria-label="Load more resources"
+        />
       </div>
     </div>
   );

@@ -3,6 +3,7 @@ import { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import ProvidersContainer from "@/components/ProvidersContainer";
 import ProvidersFilters from "@/components/ProvidersFilters";
+import PageHero from "@/components/PageHero";
 
 export default function Providers() {
   return (
@@ -47,12 +48,12 @@ function PageContents() {
 
   return (
     <>
-      <section
-        className="w-screen h-[407px] flex flex-col items-center justify-center"
-        style={{ backgroundColor: '#C96C86B0' }}
-      >
-        <h1 id="providers-hero-header" className="text-white text-4xl font-bold">Providers</h1>
-      </section>
+      <PageHero
+        bgImage="/resource-banner-2.webp"
+        title="Providers"
+        titleId="providers-hero-header"
+        className="aspect-[16/9] sm:aspect-[21/9] md:aspect-[24/9] lg:aspect-[32/9]"
+      />
 
       <main
         className="text-black flex flex-col items-center justify-center pb-12"

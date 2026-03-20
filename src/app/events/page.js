@@ -2,6 +2,8 @@
 import { useState } from 'react';
 import { HiMagnifyingGlass } from 'react-icons/hi2';
 import EventTilesGrid from '../../components/EventTilesGrid';
+import LoadMoreButton from '../../components/LoadMoreButton';
+import PageHero from '../../components/PageHero';
 import eventsBanner from '../../../public/eventsBanner.png';
 import { useEvents } from '../hooks/useEvents';
 
@@ -12,20 +14,13 @@ export default function Events() {
 	return (
 		<>
 			{/* Header */}
-			<section
-				className="w-full overflow-hidden aspect-[16/9] sm:aspect-[21/9] md:aspect-[24/9] lg:aspect-[32/9] flex items-center justify-center bg-cover bg-top bg-no-repeat"
-				style={{
-					backgroundImage: `url(${eventsBanner.src})`,
-					backgroundPosition: 'center 10%',
-				}}
-			>
-				<h1
-					id="events-hero-header"
-					className="text-[2.5rem] font-bold text-white"
-				>
-					Upcoming Events
-				</h1>
-			</section>
+			<PageHero
+					bgImage={eventsBanner.src}
+				bgImagePosition="center 10%"
+				title="Upcoming Events"
+				titleId="events-hero-header"
+				className="aspect-[16/9] sm:aspect-[21/9] md:aspect-[24/9] lg:aspect-[32/9]"
+			/>
 
 			{/* Main Body */}
 			<main
@@ -74,19 +69,13 @@ export default function Events() {
 						)}
 					</section>
 				</section>
-				{/* Load More Button*/}
-				{/* hides button if hasMore is not true */}
-				{hasMore && (
-					<button
-						id="more-events"
-						className=" bg-[#B36078] hover:bg-[#C96C86B0] text-white font-bold py-2 px-4 rounded-full m-6"
-						onClick={() => fetchEvents({ search })}
-						disabled={loading}
-						aria-label="Load more events"
-					>
-						{loading ? 'Loading more events..' : 'Load More'}
-					</button>
-				)}
+				<LoadMoreButton
+				id="more-events"
+				hasMore={hasMore}
+				loading={loading}
+				onClick={() => fetchEvents({ search })}
+				aria-label="Load more events"
+			/>
 			</main>
 		</>
 	);
