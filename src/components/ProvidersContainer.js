@@ -1,4 +1,5 @@
 import ProvidersDisplayCard from '@/components/ProvidersDisplayCard';
+import LoadMoreButton from '@/components/LoadMoreButton';
 import { useProviders } from '@/app/hooks/useProviders';
 
 export default function ProvidersContainer({ query }) {
@@ -25,22 +26,13 @@ export default function ProvidersContainer({ query }) {
           )}
         </div>
 
-        {hasMore && (
-          <div className="w-full flex justify-center">
-            <button
-              id="more-providers"
-              className="
-              text-white font-bold bg-[#B36078] 
-              hover:ring-4 hover:ring-yellow-400 transition duration-300 ease-in-out 
-              rounded-full py-2 px-4 mt-6
-              cursor-pointer"
-              onClick={fetchProviders}
-              disabled={loading}
-            >
-              {loading ? 'Loading...' : 'Load More'}
-            </button>
-          </div>
-        )}
+        <LoadMoreButton
+          id="more-providers"
+          hasMore={hasMore}
+          loading={loading}
+          onClick={fetchProviders}
+          aria-label="Load more providers"
+        />
       </div>
     </div>
   );

@@ -1,113 +1,26 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { HiMagnifyingGlass } from 'react-icons/hi2';
 import EventTilesGrid from '../../components/EventTilesGrid';
+import LoadMoreButton from '../../components/LoadMoreButton';
+import PageHero from '../../components/PageHero';
 import eventsBanner from '../../../public/eventsBanner.png';
-import default1 from '../../../public/eventsDefault1.jpg';
-import default2 from '../../../public/eventsDefault2.jpg';
-import default3 from '../../../public/eventsDefault3.jpg';
-import default4 from '../../../public/eventsDefault4.jpg';
-import default5 from '../../../public/eventsDefault5.jpg';
-import default6 from '../../../public/eventsDefault6.jpg';
-import default7 from '../../../public/eventsDefault7.jpg';
-import default8 from '../../../public/eventsDefault8.jpg';
-import default9 from '../../../public/eventsDefault9.jpg';
-import default10 from '../../../public/eventsDefault10.jpg';
-import default11 from '../../../public/eventsDefault11.jpg';
+import { useEvents } from '../hooks/useEvents';
 
 export default function Events() {
-	const [events, setEvents] = useState([]); // holds only the events currently shown
-	const [hasMore, setHasMore] = useState(true);
-	const [isLoading, setIsLoading] = useState(false);
-	const PAGE_SIZE = 6;
-	const [offset, setOffset] = useState(''); // tracking # of events displayed
 	const [search, setSearch] = useState('');
-	const [imageIndex, setImageIndex] = useState(0);
+	const { events, loading, hasMore, fetchEvents } = useEvents({ search });
 
-	async function fetchEvents(nextOffset = '', searchParam = search) {
-		if (isLoading || !hasMore) return;
-		setIsLoading(true);
-
-		try {
-			const params = new URLSearchParams({
-				pageSize: PAGE_SIZE,
-				...(nextOffset && { offset: nextOffset }),
-				...(searchParam && { search: searchParam }),
-			});
-
-			const res = await fetch(`/api/events?${params.toString()}`);
-			const [data, error] = await res.json();
-			console.log('API Response:', data);
-
-			if (Array.isArray(data?.records)) {
-				let currentIndex = imageIndex;
-
-				// Add default images to events that don't have one
-				const eventsWithImages = data.records.map((event) => {
-					const withImage = {
-						...event,
-						'Image URL':
-							event['Image URL'] ||
-							defaultImages[currentIndex % defaultImages.length].src,
-					};
-					currentIndex++;
-					return withImage;
-				});
-
-				setImageIndex(currentIndex);
-				setEvents((prev) =>
-					nextOffset ? [...prev, ...eventsWithImages] : eventsWithImages
-				);
-				setOffset(data.offset || '');
-				setHasMore(Boolean(data.offset));
-			} else {
-				console.error('Unexpected API response structure:', data);
-			}
-		} catch (error) {
-			console.error('Error fetching events:', error);
-		} finally {
-			setIsLoading(false);
-		}
-	}
-
-	useEffect(() => {
-		setEvents([]);
-		setOffset('');
-		setHasMore(true);
-		setImageIndex(0);
-		fetchEvents('', search);
-	}, [search]);
-
-	const defaultImages = [
-		default1,
-		default2,
-		default3,
-		default4,
-		default5,
-		default6,
-		default7,
-		default8,
-		default9,
-		default10,
-		default11,
-	];
 	return (
 		<>
 			{/* Header */}
-			<section
-				className="w-full overflow-hidden aspect-[16/9] sm:aspect-[21/9] md:aspect-[24/9] lg:aspect-[32/9] flex items-center justify-center bg-cover bg-top bg-no-repeat"
-				style={{
-					backgroundImage: `url(${eventsBanner.src})`,
-					backgroundPosition: 'center 10%',
-				}}
-			>
-				<h1
-					id="events-hero-header"
-					className="text-[2.5rem] font-bold text-white"
-				>
-					Upcoming Events
-				</h1>
-			</section>
+			<PageHero
+					bgImage={eventsBanner.src}
+				bgImagePosition="center 10%"
+				title="Upcoming Events"
+				titleId="events-hero-header"
+				className="aspect-[16/9] sm:aspect-[21/9] md:aspect-[24/9] lg:aspect-[32/9]"
+			/>
 
 			{/* Main Body */}
 			<main
@@ -147,7 +60,7 @@ export default function Events() {
 						className="py-10"
 						aria-labelledby="events-tiles-header"
 					>
-						{events.length === 0 && !isLoading ? (
+						{events.length === 0 && !loading ? (
 							<div className="text-center text-gray-500 py-8">
 								No events found
 							</div>
@@ -156,19 +69,13 @@ export default function Events() {
 						)}
 					</section>
 				</section>
-				{/* Load More Button*/}
-				{/* hides button if hasMore is not true */}
-				{hasMore && (
-					<button
-						id="more-events"
-						className=" bg-[#B36078] hover:bg-[#C96C86B0] text-white font-bold py-2 px-4 rounded-full m-6"
-						onClick={() => fetchEvents(offset, search)}
-						disabled={isLoading}
-						aria-label="Load more events"
-					>
-						{isLoading ? 'Loading more events..' : 'Load More'}
-					</button>
-				)}
+				<LoadMoreButton
+				id="more-events"
+				hasMore={hasMore}
+				loading={loading}
+				onClick={() => fetchEvents({ search })}
+				aria-label="Load more events"
+			/>
 			</main>
 		</>
 	);

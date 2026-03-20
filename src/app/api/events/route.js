@@ -18,12 +18,16 @@ export async function GET(request) {
 	}
 	try {
 		//fetch records --> airtable calls their entries 'records'.
-		const data = await getRecords({
+		const [data, error] = await getRecords({
 			tableName: 'Events',
 			filters,
 			pageSize: pageSize ?? 6,
 			offset: offset ?? null,
 		});
+		if (error) {
+			console.error(`Encountered ${error} when trying to fetch records from Airtable`);
+			return Response.json({ error: 'Failed to fetch events' }, { status: 500 });
+		}
 		return Response.json(data, { status: 200 });
 	} catch (error) {
 		console.error(

@@ -1,5 +1,5 @@
-const API_KEY = process.env.AIRTABLE_API_KEY;
-const BASE_ID = process.env.AIRTABLE_BASE_ID;
+const API_KEY = process.env.MOCK_AIRTABLE_API_KEY;
+const BASE_ID = process.env.MOCK_AIRTABLE_BASE_ID;
 
 // Visit https://airtable.com/developers/web/api/list-records to learn more
 export const getRecords = async ({
